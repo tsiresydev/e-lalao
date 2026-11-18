@@ -10,19 +10,21 @@ import './style.css';
 const positions: Record<number, [number, number][]> = { 0: [], 1: [[.5,.5]], 2: [[.25,.25],[.75,.75]], 3: [[.25,.25],[.5,.5],[.75,.75]], 4: [[.25,.25],[.75,.25],[.25,.75],[.75,.75]], 5: [[.25,.25],[.75,.25],[.5,.5],[.25,.75],[.75,.75]], 6: [[.25,.2],[.75,.2],[.25,.5],[.75,.5],[.25,.8],[.75,.8]] };
 function Domino({ tile, x, y, horizontal = false, selected = false, onClick, scale = 1, animate = false }: { tile: {a:number;b:number}; x:number; y:number; horizontal?:boolean; selected?:boolean; onClick?:()=>void; scale?:number; animate?:boolean }) {
   const group = useRef<Konva.Group>(null);
-  useEffect(()=>{ if (animate && group.current) { const node=group.current; node.opacity(0); node.to({opacity:1,duration:0.35,easing:Konva.Easings.EaseOut}); } },[animate]);
+  useEffect(()=>{ if (animate && group.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) { const node=group.current; node.opacity(0); node.to({opacity:1,duration:0.35,easing:Konva.Easings.EaseOut}); } },[animate]);
   const w = horizontal ? 64 : 36, h = horizontal ? 36 : 64;
   return <Group ref={group} x={x} y={y} scaleX={scale} scaleY={scale} onClick={onClick} onTap={onClick} onMouseEnter={e => { if (onClick) e.target.getStage()!.container().style.cursor = 'pointer'; }} onMouseLeave={e => { e.target.getStage()!.container().style.cursor = 'default'; }}>
-    <Rect width={w} height={h} cornerRadius={5} fill="#f7f3e8" stroke={selected ? '#d8b568' : '#ddd8ca'} strokeWidth={selected ? 3 : 1} shadowColor="#0b1713" shadowBlur={5} shadowOpacity={0.35} shadowOffsetY={3}/>
-    <Line points={horizontal ? [32,5,32,31] : [5,32,31,32]} stroke="#c6c0b2" strokeWidth={1}/>
-    {[tile.a,tile.b].map((n, half) => positions[n].map(([px,py], i) => <Circle key={`${half}-${i}`} x={horizontal ? half*32+(n===6 ? py : px)*32 : px*36} y={horizontal ? (n===6 ? px : py)*36 : half*32+py*32} radius={2.6} fill="#243b34"/>))}
+    <Rect x={0} y={2} width={w} height={h} cornerRadius={5} fill="#b3a994" shadowColor="#091b14" shadowBlur={6} shadowOpacity={0.38} shadowOffsetY={3}/>
+    <Rect width={w} height={h} cornerRadius={5} fillLinearGradientStartPoint={{x:0,y:0}} fillLinearGradientEndPoint={{x:w,y:h}} fillLinearGradientColorStops={[0,'#fffdf4',0.55,'#f1ead8',1,'#d9cdb4']} stroke={selected ? '#d8b568' : '#bfb49f'} strokeWidth={selected ? 2.5 : 1}/>
+    <Rect x={2} y={2} width={w-4} height={h-4} cornerRadius={3} stroke="rgba(255,255,255,0.6)" strokeWidth={0.8} listening={false}/>
+    <Line points={horizontal ? [32,5,32,31] : [5,32,31,32]} stroke="#aa9c83" strokeWidth={1.2}/>
+    {[tile.a,tile.b].map((n, half) => positions[n].map(([px,py], i) => <Circle key={`${half}-${i}`} x={horizontal ? half*32+(n===6 ? py : px)*32 : px*36} y={horizontal ? (n===6 ? px : py)*36 : half*32+py*32} radius={2.8} fill="#263b32" stroke="#627066" strokeWidth={0.5} shadowColor="#fff" shadowBlur={1} shadowOffsetY={1} shadowOpacity={0.55}/>))}
   </Group>;
 }
 function Board({ game, selected, choose, cancel, availableHand = [] }: {game:Game;selected:string|null;choose:(side:'left'|'right')=>void;cancel:()=>void;availableHand?:Tile[]}) {
-  const ref = useRef<HTMLDivElement>(null), [width,setWidth] = useState(800), [viewportHeight,setViewportHeight] = useState(window.innerHeight);
-  useEffect(() => { const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width)); if(ref.current) observer.observe(ref.current); return () => observer.disconnect(); }, []);
+  const ref = useRef<HTMLDivElement>(null), [width,setWidth] = useState(800), [availableHeight,setAvailableHeight] = useState(0), [viewportHeight,setViewportHeight] = useState(window.innerHeight);
+  useEffect(() => { const observer = new ResizeObserver(([entry]) => {setWidth(entry.contentRect.width); if(entry.target.closest('.playing-view')) setAvailableHeight(entry.contentRect.height);}); if(ref.current) observer.observe(ref.current); return () => observer.disconnect(); }, []);
   useEffect(() => { const resize=()=>setViewportHeight(window.innerHeight); window.addEventListener('resize',resize); return ()=>window.removeEventListener('resize',resize); },[]);
-  const height = Math.max(120,Math.min(250,viewportHeight*0.35)), boardWidth = 680, gap = 2, rowHeight = 68;
+  const height = availableHeight > 0 ? availableHeight : Math.max(120,Math.min(250,viewportHeight*0.35)), boardWidth = 680, gap = 2, rowHeight = 68;
   let cursor = 0, row = 0, direction = 1;
   const placements = game.chain.map((tile, i) => {
     const isDouble = tile.left === tile.right;
@@ -45,7 +47,7 @@ function Board({ game, selected, choose, cancel, availableHand = [] }: {game:Gam
     return result;
   });
   const minX = Math.min(0,...placements.map(p=>p.x)), maxX = Math.max(0,...placements.map(p=>p.x+(p.horizontal ? 64 : 36)));
-  const contentWidth = Math.max(64,maxX-minX), contentHeight = Math.max(64,(row+1)*rowHeight), tileScale = Math.min(0.88,(width-20)/contentWidth,(height-30)/contentHeight);
+  const contentWidth = Math.max(64,maxX-minX), contentHeight = Math.max(64,(row+1)*rowHeight), tileScale = Math.max(0.01,Math.min(0.88,(width-20)/contentWidth,(height-30)/contentHeight));
   const offsetX = (width-contentWidth*tileScale)/2-minX*tileScale, offsetY = (height-contentHeight*tileScale)/2;
   return <div className="board-canvas" ref={ref}><Stage width={width} height={height}><Layer>
     {placements.map(({tile,x,y,horizontal,reversed}) => <Domino key={tile.id} tile={{a:reversed ? tile.right : tile.left,b:reversed ? tile.left : tile.right}} x={offsetX+x*tileScale} y={offsetY+y*tileScale} horizontal={horizontal} scale={tileScale} animate/>)}

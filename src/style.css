@@ -11,3 +11,12 @@
 .score-choice{display:block;font-size:9px;letter-spacing:1px;font-weight:700;color:#78917e;margin:14px 0 8px}.score-choice select{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid #dfe7dc;border-radius:5px;background:white;color:#234a37;font:inherit;font-size:13px;letter-spacing:0}.score-target{font-size:10px;color:#75917b}.match-scores{display:flex;gap:8px;overflow-x:auto;flex:none;padding:5px 2px;color:#476a55;font-size:11px}.match-scores span{white-space:nowrap;background:#edf3eb;border-radius:4px;padding:4px 8px}.match-scores small{color:#91a496}@media(max-width:400px){.match-scores{font-size:9px;gap:4px}.match-scores span{padding:3px 5px}.score-target{font-size:9px}}
 @keyframes domino-pass-blink{0%,100%{filter:drop-shadow(0 0 3px #db2626);opacity:1}50%{filter:drop-shadow(0 0 9px #f12626);opacity:.65}}.passing-hand .hand-tile:disabled{opacity:1;background:#d52e2e;border-radius:5px;animation:domino-pass-blink .55s ease-in-out infinite;cursor:default}.auto-pass-message{text-align:center;color:#a13b36;font-size:11px;margin:2px 0}
 @media(prefers-reduced-motion:reduce){.passing-hand .hand-tile:disabled{animation:none;filter:drop-shadow(0 0 5px #db2626)}}
+
+/* Keep the board within the space left by the hand after rotation. */
+.playing-view .online-table .board-canvas{height:100%;min-height:0;overflow:hidden}
+.playing-view .online-main{padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right));padding-bottom:max(6px,env(safe-area-inset-bottom))}
+.hand-tile{transition:transform .2s ease,filter .2s ease;-webkit-tap-highlight-color:transparent}
+.hand-tile.playable:active{transform:translateY(-3px) scale(.96)}
+@media(hover:none){.hand-tile.playable:hover{transform:none}}
+@media(orientation:landscape) and (max-height:480px){.playing-view .match-scores{padding:2px;gap:4px}.playing-view .match-scores span{padding:2px 6px}.playing-view .hand-heading{align-items:center}.playing-view .hand-panel{padding-top:3px;padding-bottom:3px}}
+@media(prefers-reduced-motion:reduce){.hand-tile{transition:none}}
