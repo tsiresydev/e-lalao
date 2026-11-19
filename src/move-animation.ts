@@ -20,6 +20,25 @@ export function prepareMoveAnimation(id:string, a:number, b:number) {
   pending={id,element,rect,timeout};
 }
 
+export function prepareOpponentAnimation(tile:{id:string;a:number;b:number}, source:DOMRect) {
+  if (pending || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const element=document.createElement('canvas');
+  element.width=128; element.height=256;
+  const ctx=element.getContext('2d');
+  if(!ctx)return;
+  ctx.fillStyle='#fff';ctx.strokeStyle='#c8ceca';ctx.lineWidth=3;
+  ctx.beginPath();ctx.roundRect(2,2,124,252,10);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#303937';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(16,128);ctx.lineTo(112,128);ctx.stroke();
+  const points:Record<number,[number,number][]>={0:[],1:[[.5,.5]],2:[[.25,.25],[.75,.75]],3:[[.25,.25],[.5,.5],[.75,.75]],4:[[.25,.25],[.75,.25],[.25,.75],[.75,.75]],5:[[.25,.25],[.75,.25],[.5,.5],[.25,.75],[.75,.75]],6:[[.25,.2],[.75,.2],[.25,.5],[.75,.5],[.25,.8],[.75,.8]]};
+  ctx.fillStyle='#101615';
+  [tile.a,tile.b].forEach((n,half)=>points[n].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x*128,(half+y)*128,11,0,Math.PI*2);ctx.fill();}));
+  const rect=new DOMRect(source.left+source.width/2-18,source.top+source.height/2-36,36,72);
+  Object.assign(element.style,{position:'fixed',left:`${rect.left}px`,top:`${rect.top}px`,width:`${rect.width}px`,height:`${rect.height}px`,pointerEvents:'none',zIndex:'1000'});
+  document.body.appendChild(element);
+  const timeout=window.setTimeout(()=>{element.remove();if(pending?.element===element)pending=null;},2000);
+  pending={id:tile.id,element,rect,timeout};
+}
+
 export function finishMoveAnimation(id:string, target:DOMRect, horizontal:boolean, done:()=>void):boolean {
   if (!pending || pending.id!==id) return false;
   const {element,rect,timeout}=pending; pending=null; window.clearTimeout(timeout);

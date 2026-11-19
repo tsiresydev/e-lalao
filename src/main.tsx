@@ -7,7 +7,7 @@ import { canPlay, Game, newGame, pass, play, sides, Tile } from './game';
 import { Online } from './online';
 import { Ludo } from './ludo';
 import { GameHub } from './game-hub';
-import { finishMoveAnimation, prepareMoveAnimation } from './move-animation';
+import { finishMoveAnimation, prepareMoveAnimation, prepareOpponentAnimation } from './move-animation';
 import './style.css';
 import './design-system.css';
 
@@ -26,6 +26,7 @@ function Domino({ tile, x, y, horizontal = false, selected = false, onClick, sca
 function Board({ game, selected, choose, cancel, availableHand = [] }: {game:Game;selected:string|null;choose:(side:'left'|'right')=>void;cancel:()=>void;availableHand?:Tile[]}) {
   const ref = useRef<HTMLDivElement>(null), [width,setWidth] = useState(800), [availableHeight,setAvailableHeight] = useState(0), [viewportHeight,setViewportHeight] = useState(window.innerHeight);
   const [movingTile,setMovingTile]=useState<string|null>(null);
+  const previous=useRef({chain:game.chain,turn:game.turn,hasHand:availableHand.length>0});
   useEffect(() => { const observer = new ResizeObserver(([entry]) => {setWidth(entry.contentRect.width); setAvailableHeight(entry.target.closest('.playing-view, .table-focus') ? entry.contentRect.height : 0);}); if(ref.current) observer.observe(ref.current); return () => observer.disconnect(); }, []);
   useEffect(() => { const resize=()=>setViewportHeight(window.innerHeight); window.addEventListener('resize',resize); return ()=>window.removeEventListener('resize',resize); },[]);
   const height = availableHeight > 0 ? availableHeight : Math.max(120,Math.min(250,viewportHeight*0.35)), preferredScale = 1.25, boardWidth = Math.max(180,(width-28)/preferredScale), gap = 2, rowHeight = 66;
@@ -56,14 +57,23 @@ function Board({ game, selected, choose, cancel, availableHand = [] }: {game:Gam
   const canvasWidth = width, canvasHeight = height, tileScale = Math.min(preferredScale, Math.max(1,width-28)/contentWidth, Math.max(1,height-28)/contentHeight);
   const offsetX = (canvasWidth-contentWidth*tileScale)/2-minX*tileScale, offsetY = (canvasHeight-contentHeight*tileScale)/2-minY*tileScale;
   useLayoutEffect(()=>{
+    const before=previous.current;
+    previous.current={chain:game.chain,turn:game.turn,hasHand:availableHand.length>0};
     const bounds=ref.current?.querySelector('.konvajs-content')?.getBoundingClientRect();
     if(!bounds)return;
+    const online=Boolean(ref.current?.closest('.online-page'));
+    if(game.chain.length===before.chain.length+1 && before.chain.every(tile=>game.chain.some(next=>next.id===tile.id)) && (online ? !before.hasHand : before.turn!==0)) {
+      const added=game.chain.find(tile=>!before.chain.some(old=>old.id===tile.id));
+      const selector=before.turn===1 ? '.top-player' : before.turn===2 ? '.side-player:not(.right-player)' : '.right-player';
+      const source=online ? new DOMRect(bounds.left+bounds.width/2,bounds.top,0,0) : document.querySelector(selector)?.getBoundingClientRect();
+      if(added && source)prepareOpponentAnimation(added,source);
+    }
     for(const p of [placements[0],placements[placements.length-1]]){
       if(!p)continue;
       const target=new DOMRect(bounds.left+offsetX+p.x*tileScale,bounds.top+offsetY+p.y*tileScale,(p.horizontal ? 64 : 32)*tileScale,(p.horizontal ? 32 : 64)*tileScale);
       if(finishMoveAnimation(p.tile.id,target,p.horizontal,()=>setMovingTile(current=>current===p.tile.id ? null : current))){setMovingTile(p.tile.id);break;}
     }
-  },[game.chain]);
+  },[game.chain,game.turn,availableHand.length]);
   return <div className="board-canvas" ref={ref} style={{'--board-default-height':`${height}px`} as React.CSSProperties}><div className="board-scroll" role="region" aria-label="Plateau de dominos" tabIndex={0} onKeyDown={e=>{ const side=e.key==='ArrowLeft' ? 'left' : e.key==='ArrowRight' ? 'right' : null; if(selected && side && availableHand.some(tile=>tile.id===selected && sides(game,tile).includes(side))){e.preventDefault();choose(side);} }}><Stage width={canvasWidth} height={canvasHeight}><Layer listening={Boolean(selected)}>
     {placements.map(({tile,x,y,horizontal,reversed}) => <Domino key={tile.id} tile={{a:reversed ? tile.right : tile.left,b:reversed ? tile.left : tile.right}} x={offsetX+x*tileScale} y={offsetY+y*tileScale} horizontal={horizontal} scale={tileScale} animate hidden={movingTile===tile.id}/>)}
     {placements.length > 0 && (['left','right'] as const).filter(side => availableHand.some(tile=>sides(game,tile).includes(side))).map(side => {
