@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { ArrowLeft, ArrowRight, Copy, Users, Maximize, Minimize } from 'lucide-react';
 import { Stage, Layer } from 'react-konva';
 import { Game, Placed, Tile, sides } from './game';
+import { prepareMoveAnimation } from './move-animation';
 
 type OnlinePlayer = { uid:string; name:string; seat:number; count:number; score:number; hand:Tile[] | null };
 type Room = { code:string; host:string; me:string; status:'waiting'|'playing'|'finished'; chain:Placed[]; turn:number|null; opening:string|null; message:string; target_score:number; champion_name:string|null; round_finished_at:string|null; players:OnlinePlayer[] };
@@ -98,6 +99,7 @@ export function Online({ back, Board, Domino }: { back:()=>void; Board:React.Com
     if(!room || !myTurn || moveInFlight.current)return;
     const roomCode=room.code, generation=roomGeneration.current;
     moveInFlight.current=true;
+    prepareMoveAnimation(tile.id,tile.a,tile.b);
     setPendingMove({code:roomCode,tile,side});setSelected(null);
     void (async()=>{try{await call('domino_move',{p_code:roomCode,p_tile:tile.id,p_side:side});if(generation===roomGeneration.current)await call('domino_state',{p_code:roomCode},true);}finally{moveInFlight.current=false;setPendingMove(null);}})();
   };
