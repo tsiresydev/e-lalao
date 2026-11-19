@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, CircleHelp, Flag, RotateCcw, X } from 'lucide-react';
+import { ArrowLeft, CircleHelp, Flag, Minus, Plus, RotateCcw, X } from 'lucide-react';
 import { computerMove, newFaritany, placePoint, score } from './faritany-game';
 import './faritany.css';
 import { FaritanyLobby, useFaritanyOnline } from './faritany-online';
@@ -15,6 +15,7 @@ export function Faritany({back}:{back:()=>void}) {
   const [rules,setRules]=useState(false);
   const [focus,setFocus]=useState({x:7,y:7});
   const [offset,setOffset]=useState({x:0,y:0});
+  const [zoom,setZoom]=useState(125);
   const [dragging,setDragging]=useState(false);
   const drag=useRef<{id:number;startX:number;startY:number;x:number;y:number;moved:boolean}|null>(null);
   const suppressClick=useRef(false);
@@ -22,11 +23,12 @@ export function Faritany({back}:{back:()=>void}) {
   const winner=blue===red ? 'Égalité !' : `${blue>red?'Bleu':'Rouge'} remporte la partie !`;
   useEffect(()=>{if(mode!=='computer' || game.finished || game.turn!=='red')return;const timer=window.setTimeout(()=>setGame(current=>{if(current.finished || current.turn!=='red')return current;const move=computerMove(current);return move ? placePoint(current,move.x,move.y) : current;}),450);return ()=>window.clearTimeout(timer);},[game,mode]);
   const play=(x:number,y:number)=>{if(mode==='online'){if(onlineRoom?.status==='playing' && onlineRoom.game.turn===onlineColor && !online.busy)void online.move(x,y);return;}if(mode==='computer' && game.turn==='red')return;setFocus({x,y});setGame(current=>placePoint(current,x,y));};
-  const reset=()=>{if(game.points.length && !window.confirm('Commencer une nouvelle partie ?'))return;setMode(null);setGame(newFaritany(15,target));setFocus({x:7,y:7});setOffset({x:0,y:0});};
+  const reset=()=>{if(game.points.length && !window.confirm('Commencer une nouvelle partie ?'))return;setMode(null);setGame(newFaritany(15,target));setFocus({x:7,y:7});setOffset({x:0,y:0});setZoom(125);};
   const finish=()=>{if(window.confirm('Terminer la partie et compter les points capturés ?'))setGame(current=>({...current,finished:true}));};
   const margin=20, step=30, extent=(game.size-1)*step, size=extent+margin*2;
   // Show a magnified part of the sheet; panning moves the viewport, not the grid.
-  const viewSize=size/1.25, viewInset=(size-viewSize)/2;
+  const viewSize=size/(zoom/100), viewInset=(size-viewSize)/2;
+  const changeZoom=(next:number)=>{const value=Math.max(100,Math.min(250,next)),limit=(size-size/(value/100))/2;setZoom(value);setOffset(current=>({x:Math.max(-limit,Math.min(limit,current.x)),y:Math.max(-limit,Math.min(limit,current.y))}));};
   if(!mode)return <div className="faritany-setup-page"><header className="faritany-header"><button onClick={()=>{if(mode==='online'){if(window.confirm('Quitter annule la partie. Continuer ?'))void online.leave().then(ok=>{if(ok)setMode(null);});}else back();}}><ArrowLeft size={18}/> <span>{mode==='online'?'Quitter le salon':'Tous les jeux'}</span></button><strong>KOPAKA <span>/ FARITANY</span></strong><button onClick={()=>setRules(true)} aria-label="Règles"><CircleHelp size={20}/></button></header><main className="faritany-setup"><span>LE JEU DES TERRITOIRES</span><h1>Jouer au Faritany<span>.</span></h1><p>Choisissez votre objectif et votre adversaire.</p><label htmlFor="faritany-target">POINTS À CAPTURER POUR GAGNER</label><select id="faritany-target" value={target} onChange={e=>setTarget(Number(e.target.value))}>{[5,10,15,20,30].map(n=><option key={n} value={n}>{n} points</option>)}</select><div className="faritany-modes"><button onClick={()=>{setGame(newFaritany(15,target));setMode('computer');}}><strong>Contre l’ordinateur</strong><small>Affrontez la machine sur cet appareil.</small></button><button onClick={()=>{setGame(newFaritany(15,target));setMode('local');}}><strong>À deux sur cet appareil</strong><small>Jouez chacun votre tour sur la même grille.</small></button><button onClick={()=>{setMode('online');const saved=sessionStorage.getItem('faritany-room');if(saved)void online.refresh(saved);}}><strong>Entre amis en ligne</strong><small>Salon priv? ? deux joueurs.</small></button></div>{rules && <div className="modal-backdrop" onClick={()=>setRules(false)}><div className="modal faritany-rules" role="dialog" aria-modal="true" aria-label="Règles du Faritany" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setRules(false)} aria-label="Fermer"><X size={20}/></button><h2>Les règles du Faritany</h2><p>Placez vos points à tour de rôle. Entourez des points adverses avec les vôtres pour les capturer. Le premier à atteindre le score choisi gagne.</p><button className="primary-button" onClick={()=>setRules(false)}>C’est compris</button></div></div>}</main></div>;
   if(mode==='online' && (!onlineRoom || onlineRoom.status==='waiting'))return <FaritanyLobby online={online} target={target} onBack={()=>void online.leave().then(ok=>{if(ok)setMode(null);})}/>;
   return <div className="faritany-page">
@@ -51,6 +53,7 @@ export function Faritany({back}:{back:()=>void}) {
             {Array.from({length:game.size*game.size},(_,i)=>{const x=i%game.size,y=Math.floor(i/game.size);return <rect key={i} x={margin+x*step-step/2} y={margin+y*step-step/2} width={step} height={step} fill="transparent" className={game.finished || game.points.some(p=>p.x===x && p.y===y)?'unavailable':'intersection'} onClick={()=>play(x,y)}/>;})}
           </svg>
           {game.finished && <div className="faritany-result" role="status"><span>PARTIE TERMINÉE</span><strong>{winner}</strong><small>{blue} bleu · {red} rouge</small></div>}
+          <div className="faritany-zoom" role="group" aria-label="Zoom de la grille"><button type="button" aria-label="Dézoomer la grille" title="Dézoomer" disabled={zoom<=100} onClick={()=>changeZoom(zoom-25)}><Minus size={18}/></button><span aria-live="polite">{zoom} %</span><button type="button" aria-label="Zoomer la grille" title="Zoomer" disabled={zoom>=250} onClick={()=>changeZoom(zoom+25)}><Plus size={18}/></button></div>
         </div></div>
         <div className="faritany-controls"><p role="status">{online.error || (game.finished ? 'Partie terminée.' : mode==='online' ? (online.busy?'Envoi du coup…':game.turn===onlineColor?'À vous de jouer.':'Au tour de votre adversaire.') : mode==='computer' && game.turn==='red' ? 'L’ordinateur réfléchit…' : `Au tour du joueur ${game.turn==='blue'?'bleu':'rouge'} : placez un point sur une intersection libre.`)}</p><div><button onClick={()=>setOffset({x:0,y:0})} disabled={offset.x===0 && offset.y===0} title="Recentrer la feuille"><RotateCcw size={16}/> Recentrer</button>{mode!=='online' && <button onClick={reset}><RotateCcw size={16}/> Nouvelle partie</button>}{mode!=='online' && !game.finished && <button onClick={finish}><Flag size={16}/> Terminer</button>}</div></div>
       </section>

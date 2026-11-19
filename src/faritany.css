@@ -12,6 +12,7 @@
 .faritany-board{height:100%;width:auto;max-width:100%;max-height:100%;aspect-ratio:1}
 .faritany-board svg{width:100%;height:100%}
 .faritany-board svg{touch-action:none;cursor:grab}.faritany-board svg.is-dragging{cursor:grabbing}.faritany-controls button:disabled{opacity:.5;cursor:default}
+.faritany-zoom{position:absolute;right:8px;top:8px;z-index:2;display:flex;align-items:center;border:1px solid #526a80;border-radius:8px;background:#1c2d40ed;color:#fff;box-shadow:0 3px 10px #0003}.faritany-zoom button{display:grid;place-items:center;width:40px;height:40px;padding:0;border:0;background:transparent;color:#fff;cursor:pointer}.faritany-zoom button:disabled{opacity:.4;cursor:default}.faritany-zoom button:focus-visible{outline:3px solid #eac16b;outline-offset:-3px}.faritany-zoom span{min-width:44px;text-align:center;font-size:12px;font-weight:700}
 .faritany-controls{padding:8px 12px}
 .faritany-rules{max-height:calc(100dvh - 40px);overflow:auto}
 @media(max-width:600px){.faritany-controls{gap:5px}.faritany-controls button{padding:7px 10px}.faritany-controls p{font-size:11px}}
