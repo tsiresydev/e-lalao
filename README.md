@@ -24,3 +24,11 @@ Les migrations dans `supabase/migrations/` ont été appliquées au projet Supab
 Les sessions anonymes restent liées au navigateur : effacer ses données empêche de retrouver sa session. La reconnexion au salon est possible dans le même onglet tant que sa session est conservée. Quitter explicitement libère la place ; si une manche est en cours, elle est annulée. Une nouvelle manche démarre automatiquement après un décompte de cinq secondes, tant qu'au moins deux joueurs restent et que le score cible n'est pas atteint. Un client connecté déclenche la reprise ; le serveur vérifie le délai et empêche les distributions concurrentes.
 
 Les tentatives de rejoindre un salon sont limitées par compte (20 par 10 minutes). Cette mesure ne suffit pas contre la création massive de comptes anonymes : configurer un CAPTCHA et des limites IP côté Supabase avant une mise en production. Une fermeture de navigateur ou une coupure réseau ne provoque pas de départ automatique, et les salons abandonnés ne sont pas encore nettoyés automatiquement.
+
+## Ludo entre amis
+
+Le Ludo possède ses propres salons à code, pour deux à quatre joueurs. Le serveur lance le dé et valide les déplacements, captures, cases sûres, lancers supplémentaires et l'arrivée au compte exact. Trois 6 consécutifs mettent fin au tour sans annuler les mouvements précédents. La capture et un 6 donnent au maximum un lancer supplémentaire par coup.
+
+Le créateur choisit 2, 3 ou 4 participants : la partie commence lorsque toutes les places choisies sont occupées. Les anciens salons conservent leur fonctionnement de 2 à 4 joueurs.
+
+Appliquer également la migration `ludo_online` pour activer le jeu en ligne. Les changements sont signalés via un canal Realtime privé, avec rafraîchissement de secours. Quitter une partie l'annule et ramène les autres joueurs au salon. Comme pour les dominos, les salons abandonnés ne sont pas nettoyés automatiquement ; la limitation par compte ne remplace pas un CAPTCHA et des limites par adresse IP.
