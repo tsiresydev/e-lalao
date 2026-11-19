@@ -29,7 +29,8 @@ function Board({ game, selected, choose, cancel, availableHand = [] }: {game:Gam
   const previous=useRef({chain:game.chain,turn:game.turn,hasHand:availableHand.length>0});
   useEffect(() => { const observer = new ResizeObserver(([entry]) => {setWidth(entry.contentRect.width); setAvailableHeight(entry.target.closest('.playing-view, .table-focus') ? entry.contentRect.height : 0);}); if(ref.current) observer.observe(ref.current); return () => observer.disconnect(); }, []);
   useEffect(() => { const resize=()=>setViewportHeight(window.innerHeight); window.addEventListener('resize',resize); return ()=>window.removeEventListener('resize',resize); },[]);
-  const height = availableHeight > 0 ? availableHeight : Math.max(120,Math.min(250,viewportHeight*0.35)), preferredScale = 1.25, boardWidth = Math.max(180,(width-28)/preferredScale), gap = 2, rowHeight = 66;
+  const handWidth=ref.current?.closest('.game-column, .online-layout > section')?.clientWidth ?? window.innerWidth;
+  const height = availableHeight > 0 ? availableHeight : Math.max(120,Math.min(250,viewportHeight*0.35)), preferredScale = Math.min(1.55, viewportHeight<=480 ? 0.8 : 1.55, Math.max(0.3,(handWidth-32)*1.12/(7*48))), boardWidth = Math.max(180,(width-28)/preferredScale), gap = 2, rowHeight = 66;
   let cursor = 0, row = 0, direction = 1;
   const placements = game.chain.map((tile, i) => {
     const isDouble = tile.left === tile.right;
@@ -56,6 +57,11 @@ function Board({ game, selected, choose, cancel, availableHand = [] }: {game:Gam
   const contentWidth = Math.max(64,maxX-minX), contentHeight = Math.max(64,maxY-minY);
   const canvasWidth = width, canvasHeight = height, tileScale = Math.min(preferredScale, Math.max(1,width-28)/contentWidth, Math.max(1,height-28)/contentHeight);
   const offsetX = (canvasWidth-contentWidth*tileScale)/2-minX*tileScale, offsetY = (canvasHeight-contentHeight*tileScale)/2-minY*tileScale;
+  useLayoutEffect(()=>{
+    const container=ref.current?.closest<HTMLElement>('.game-column, .online-layout > section');
+    container?.style.setProperty('--hand-domino-scale',String(tileScale/1.12));
+    return ()=>{container?.style.removeProperty('--hand-domino-scale');};
+  },[tileScale]);
   useLayoutEffect(()=>{
     const before=previous.current;
     previous.current={chain:game.chain,turn:game.turn,hasHand:availableHand.length>0};

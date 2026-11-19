@@ -102,6 +102,10 @@ button:disabled{cursor:not-allowed}
 .table-focus .hand-tile .konvajs-content{transform-origin:top left}
 @media(max-height:480px){.table-focus .hand-heading p,.table-focus .table-bottom,.table-focus .below-table{display:none}.table-focus .hand-panel{padding:3px 10px}.table-focus .hand-tile{height:56px}.table-focus .hand-tile .konvajs-content{transform:scale(.7)}}
 @media(max-width:380px){.table-focus .hand-tile .konvajs-content{transform:scale(.8)}.table-focus .hand-tile{height:65px}}
+/* Keep the pieces in the hand at the same scale as the board. */
+.game-column .hand-tiles,.online-layout .online-tiles{gap:0;overflow:hidden}
+.game-column .hand-tile,.online-layout .online-tiles .hand-tile{width:calc(48px * var(--hand-domino-scale, 1));max-width:none;height:calc(78px * var(--hand-domino-scale, 1));min-width:0;flex:none}
+.game-column .hand-tile .konvajs-content,.online-layout .online-tiles .hand-tile .konvajs-content{transform:scale(var(--hand-domino-scale, 1)) !important;transform-origin:top left}
 .side-pick{background:#202f40;border:1px solid #d3b46d;color:#fff}.side-pick button{background:#465b6d;color:#fff}.side-pick .cancel{color:#dce8ed}
 .below-table,.below-table button{color:#b9cfc4}.sidebar-card,.online-layout aside{border-radius:var(--kp-radius)}.card-heading h2,.online-layout aside h2{color:#fff}
 .player-row{border-color:var(--kp-border-soft)}.player-score small,.round-info{color:var(--kp-muted)}.round-info{border-color:var(--kp-border-soft)}.round-info strong{color:#fff}
