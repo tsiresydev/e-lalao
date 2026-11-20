@@ -13,7 +13,7 @@ describe('validation des coups Faritany', () => {
     const game = applyFaritanyMove(newFaritany(), 'blue', 2, 3);
     expect(() => applyFaritanyMove(game, 'blue', 3, 3)).toThrow('tour');
     expect(() => applyFaritanyMove(game, 'red', 2, 3)).toThrow('occupée');
-    expect(() => applyFaritanyMove(game, 'red', -1, 3)).toThrow('invalide');
+    expect(() => applyFaritanyMove(game, 'red', 1_000_001, 3)).toThrow('invalide');
   });
 
   it('refuse les coups après la fin de partie', () => {

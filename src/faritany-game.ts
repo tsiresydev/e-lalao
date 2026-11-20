@@ -2,6 +2,8 @@ export type Player = 'blue' | 'red';
 export type Point = { x:number; y:number; player:Player; captured:boolean };
 export type Territory = { player:Player; path:{x:number;y:number}[] };
 export type FaritanyGame = { size:number; points:Point[]; territories:Territory[]; turn:Player; finished:boolean; target:number };
+// A generous safety limit keeps coordinates and geometry numerically stable.
+export const FARITANY_COORD_LIMIT = 1_000_000;
 
 export function newFaritany(size=15,target=10):FaritanyGame {
   return {size,points:[],territories:[],turn:'blue',finished:false,target};
@@ -59,7 +61,7 @@ function faces(points:Point[], player:Player):Point[][] {
 }
 
 export function placePoint(game:FaritanyGame,x:number,y:number):FaritanyGame {
-  if(game.finished || !Number.isInteger(x) || !Number.isInteger(y) || x<0 || y<0 || x>=game.size || y>=game.size || game.points.some(p=>p.x===x && p.y===y))return game;
+  if(game.finished || !Number.isSafeInteger(x) || !Number.isSafeInteger(y) || Math.abs(x)>FARITANY_COORD_LIMIT || Math.abs(y)>FARITANY_COORD_LIMIT || game.points.some(p=>p.x===x && p.y===y))return game;
   const points=[...game.points,{x,y,player:game.turn,captured:false}];
   const territories=[...game.territories];
   for(const path of faces(points,game.turn)){
@@ -82,7 +84,13 @@ export function computerMove(game:FaritanyGame):{x:number;y:number}|null {
   if(game.finished)return null;
   const occupied=new Set(game.points.map(p=>key(p.x,p.y)));
   const candidates:{x:number;y:number;weight:number}[]=[];
-  for(let y=0;y<game.size;y++)for(let x=0;x<game.size;x++){
+  const locations=new Map<string,{x:number;y:number}>();
+  for(const p of game.points)for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++){
+    const x=p.x+dx,y=p.y+dy;
+    if(Math.abs(x)<=FARITANY_COORD_LIMIT && Math.abs(y)<=FARITANY_COORD_LIMIT)locations.set(key(x,y),{x,y});
+  }
+  if(!locations.size)locations.set(key(0,0),{x:0,y:0});
+  for(const {x,y} of locations.values()){
     if(occupied.has(key(x,y)))continue;
     const neighbours=game.points.filter(p=>!p.captured && Math.max(Math.abs(p.x-x),Math.abs(p.y-y))<=2);
     candidates.push({x,y,weight:neighbours.reduce((sum,p)=>sum+(p.player===game.turn?2:1),0)+Math.random()});

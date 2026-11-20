@@ -6,7 +6,7 @@ describe('Faritany',()=>{
     const first=placePoint(newFaritany(5),1,1);
     expect(first.turn).toBe('red');
     expect(placePoint(first,1,1)).toBe(first);
-    expect(placePoint(first,5,0)).toBe(first);
+    expect(placePoint(first,5,0).points).toHaveLength(2);
   });
   it('capture un point adverse dans une boucle diagonale',()=>{
     const game:FaritanyGame={...newFaritany(5),points:[
@@ -66,5 +66,15 @@ describe('Faritany',()=>{
     expect(move).not.toEqual({x:2,y:2});
     expect(placePoint(game,move.x,move.y).points).toHaveLength(2);
     expect(computerMove({...game,finished:true})).toBeNull();
+  });
+  it('permet de jouer et de capturer au-delà de la grille initiale',()=>{
+    const game:FaritanyGame={...newFaritany(5),points:[
+      {x:-2,y:-1,player:'blue',captured:false},{x:-1,y:-2,player:'blue',captured:false},
+      {x:0,y:-1,player:'blue',captured:false},{x:-1,y:-1,player:'red',captured:false},
+    ]};
+    const next=placePoint(game,-1,0);
+    expect(score(next,'blue')).toBe(1);
+    expect(next.territories).toHaveLength(1);
+    expect(placePoint(next,1_000_001,0)).toBe(next);
   });
 });

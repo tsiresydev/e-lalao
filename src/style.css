@@ -22,3 +22,5 @@
 @media(prefers-reduced-motion:reduce){.hand-tile{transition:none}}
 .side-pick{max-width:100%;white-space:normal;justify-content:center;flex-wrap:wrap}.side-pick button{min-height:36px;padding:6px 10px;touch-action:manipulation}
 .board-canvas{height:var(--board-default-height)}.board-scroll{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y}.board-scroll canvas{touch-action:pan-x pan-y}
+.turn-countdown{display:inline-flex;align-items:center;justify-content:center;min-width:3.2rem;padding:.2rem .55rem;border:1px solid #d8b45a;border-radius:999px;background:#fff8e6;color:#7a5a00;font-weight:800;font-size:.85rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cancel-room-button{border:1px solid #e3b7aa;background:#fff6f2;color:#9b4b39;border-radius:6px;padding:.45rem .8rem;font-size:11px;font-weight:700}.cancel-room-button:hover{background:#fdeae3}.cancel-room-button:disabled{opacity:.5;cursor:not-allowed}

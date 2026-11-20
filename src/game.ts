@@ -16,7 +16,7 @@ export function newGame(names = ['Vous', 'Léon', 'Camille', 'Sacha']): Game {
   return { players, chain: [], turn: starter.index, passes: 0, winner: null, message: `${players[starter.index].name} commence avec le plus grand double.`, opening: starter.tile.id };
 }
 export function sides(game: Game, tile: Tile): ('left' | 'right')[] {
-  if (!game.chain.length) return tile.id === game.opening ? ['right'] : [];
+  if (!game.chain.length) return !game.opening || tile.id === game.opening ? ['right'] : [];
   const left = game.chain[0].left, right = game.chain[game.chain.length - 1].right;
   return [...(tile.a === left || tile.b === left ? ['left' as const] : []), ...(tile.a === right || tile.b === right ? ['right' as const] : [])];
 }

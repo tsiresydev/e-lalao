@@ -6,9 +6,11 @@ import { createClient } from '@supabase/supabase-js';
 import { ArrowLeft, Copy, Dice5, Users } from 'lucide-react';
 import { legalLudoPawns, LUDO_SAFE, trackSquare } from './ludo-game';
 import './ludo.css';
+import { useTurnExpiry } from './room-presence';
+import { TurnCountdown } from './turn-countdown';
 
 type Player = { uid:string; name:string; seat:number; pawns:number[] };
-type Room = { code:string; host:string; me:string; status:'waiting'|'playing'|'finished'; turn:number|null; die:number|null; winner:number|null; message:string; player_limit:number|null; players:Player[] };
+type Room = { code:string; host:string; me:string; status:'waiting'|'playing'|'finished'; turn:number|null; die:number|null; winner:number|null; message:string; player_limit:number|null; turn_deadline?:string|null; players:Player[] };
 const client = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? createClient(import.meta.env.VITE_SUPABASE_URL,import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) : null;
 const colors=['#e94853','#39b56a','#f0b92f','#438de1'];
 const light=['#ffdfe1','#def7e5','#fff1bf','#dcecff'];
@@ -45,6 +47,7 @@ function Board({room,onMove}:{room:Room;onMove:(pawn:number)=>void}) {
 
 export function Ludo({back}:{back:()=>void}) {
   const [room,setRoom]=useState<Room|null>(null),[name,setName]=useState(''),[code,setCode]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[copied,setCopied]=useState(false);
+  useTurnExpiry(client, 'ludo', room?.code, room?.status === 'playing');
   const [playerLimit,setPlayerLimit]=useState(4);
   const [rolling,setRolling]=useState(false);
   const request=useRef(0),mutating=useRef(false),alive=useRef(true);
@@ -61,7 +64,11 @@ export function Ludo({back}:{back:()=>void}) {
       const {data,error:e}=await client.rpc(fn,args);if(e)throw e;
       if(data && typeof data==='object' && 'error' in data)throw new Error(String(data.error));
       if(alive.current&&id===request.current){setRoom(data as Room);sessionStorage.setItem('ludo-room',(data as Room).code);}
-    }catch(e){if(alive.current&&!quiet)setError(e && typeof e==='object' && 'message' in e ? String(e.message) : 'Connexion impossible.');}
+    }catch(e){
+      const message=e && typeof e==='object' && 'message' in e ? String(e.message) : 'Connexion impossible.';
+      if(alive.current&&quiet&&/refusé|introuvable/i.test(message)){sessionStorage.removeItem('ludo-room');setRoom(null);}
+      if(alive.current&&!quiet)setError(message);
+    }
     finally{if(!quiet){mutating.current=false;if(alive.current)setBusy(false);}}
   },[]);
   useEffect(()=>{const saved=sessionStorage.getItem('ludo-room');if(saved)void call('ludo_state',{p_code:saved},true);},[call]);
@@ -74,8 +81,17 @@ export function Ludo({back}:{back:()=>void}) {
     const timer=window.setInterval(refresh,15000);
     return()=>{cancelled=true;window.clearInterval(timer);if(channel)void c.removeChannel(channel);};
   },[room?.code,call]);
+  const cancelRoom=async()=>{
+    if(!room||!client||room.host!==room.me||room.status!=='waiting')return;
+    if(!window.confirm('Annuler ce salon ? Tous les joueurs invités seront déconnectés.'))return;
+    setBusy(true);
+    const {error:e}=await client.rpc('ludo_cancel',{p_code:room.code});
+    setBusy(false);
+    if(e){setError(e.message);return;}
+    request.current++;sessionStorage.removeItem('ludo-room');setRoom(null);setError('Salon annulé.');
+  };
   const leave=async()=>{if(room&&client){if(room.status==='playing'&&!window.confirm('Quitter annule la partie. Continuer ?'))return;setBusy(true);const {error:e}=await client.rpc('ludo_leave',{p_code:room.code});if(e){setError(e.message);setBusy(false);return;}}request.current++;sessionStorage.removeItem('ludo-room');back();};
   const me=room?.players.find(p=>p.uid===room.me),myTurn=room?.status==='playing'&&room.turn===me?.seat;
   return <div className={`${room ? 'ludo-page ludo-table-view' : 'online-page'}`}><header className={room ? "ludo-header" : "online-header"}><button onClick={()=>void leave()}><ArrowLeft size={19}/> Retour</button>{room?<strong>LUDO <span>ENTRE AMIS</span></strong>:<strong>KOPAKA</strong>}<span>{room?null:"PARTIE ENTRE AMIS"}</span></header>
-    {!room?<PrivateRoomWelcome description="Créez un salon et partagez son code, ou rejoignez une partie de Ludo. De 2 à 4 joueurs."><RoomChoice busy={busy} error={error} name={name} setName={setName} code={code} setCode={setCode} createOptions={<label>Nombre de joueurs<select value={playerLimit} onChange={e=>setPlayerLimit(Number(e.target.value))}>{[2,3,4].map(n=><option key={n} value={n}>{n} joueurs</option>)}</select></label>} onCreate={()=>void call('ludo_create_configured',{p_name:name,p_player_limit:playerLimit})} onJoin={()=>void call('ludo_join',{p_code:code,p_name:name})}/></PrivateRoomWelcome>:<main className="ludo-game"><div className="ludo-roomline"><span>Code <strong>{room.code}</strong> · {room.players.length}/{room.player_limit ?? 4} joueurs</span><button onClick={()=>void navigator.clipboard.writeText(room.code).then(()=>{setCopied(true);window.setTimeout(()=>setCopied(false),2000);}).catch(()=>setError('Copie impossible.'))}><Copy size={15}/> {copied?'Copié':'Copier'}</button></div><Board room={room} onMove={pawn=>{if(!busy&&room)void call('ludo_move',{p_code:room.code,p_pawn:pawn});}}/><div className="ludo-controls"><p role="status">{room.status==='waiting'?(room.player_limit===null?'Invitez vos amis, puis lancez la partie.':'Invitez vos amis : la partie commence automatiquement.'):room.status==='finished'?room.message:myTurn?(room.die?'Choisissez un pion en surbrillance.':'À vous de lancer le dé !'):room.message}</p>{room.status==='waiting'?room.player_limit!==null?<WaitingIndicator game="ludo" current={room.players.length} total={room.player_limit}/>:room.host===room.me?<button className="ludo-primary" disabled={busy||room.players.length<(room.player_limit ?? 2)} onClick={()=>void call('ludo_start',{p_code:room.code})}><Users size={18}/> Commencer ({room.players.length}/{room.player_limit ?? 4})</button>:<span>En attente du créateur…</span>:room.status==='playing'?<button className={`ludo-dice ${rolling ? "is-rolling" : ""}`} disabled={!myTurn||room.die!==null||busy||rolling} onClick={()=>{setRolling(true);void call('ludo_roll',{p_code:room.code});}} aria-label={room.die?`Dé : ${room.die}`:"Lancer le dé"}><DiceFace value={room.die}/></button>:<button className="ludo-primary" onClick={()=>void leave()}>Retour aux jeux</button>}</div></main>}{error&&<div className="ludo-error" role="alert">{error}</div>}</div>;
+    {!room?<PrivateRoomWelcome description="Créez un salon et partagez son code, ou rejoignez une partie de Ludo. De 2 à 4 joueurs."><RoomChoice busy={busy} error={error} name={name} setName={setName} code={code} setCode={setCode} createOptions={<label>Nombre de joueurs<select value={playerLimit} onChange={e=>setPlayerLimit(Number(e.target.value))}>{[2,3,4].map(n=><option key={n} value={n}>{n} joueurs</option>)}</select></label>} onCreate={()=>void call('ludo_create_configured',{p_name:name,p_player_limit:playerLimit})} onJoin={()=>void call('ludo_join',{p_code:code,p_name:name})}/></PrivateRoomWelcome>:<main className="ludo-game"><div className="ludo-roomline"><span>Code <strong>{room.code}</strong> · {room.players.length}/{room.player_limit ?? 4} joueurs</span><TurnCountdown deadline={room.turn_deadline} active={room.status==='playing'}/>{room.status==='waiting'&&room.host===room.me&&<button className="cancel-room-button" disabled={busy} onClick={()=>void cancelRoom()}>Annuler le salon</button>}<button onClick={()=>void navigator.clipboard.writeText(room.code).then(()=>{setCopied(true);window.setTimeout(()=>setCopied(false),2000);}).catch(()=>setError('Copie impossible.'))}><Copy size={15}/> {copied?'Copié':'Copier'}</button></div><Board room={room} onMove={pawn=>{if(!busy&&room)void call('ludo_move',{p_code:room.code,p_pawn:pawn});}}/><div className="ludo-controls"><p role="status">{room.status==='waiting'?(room.player_limit===null?'Invitez vos amis, puis lancez la partie.':'Invitez vos amis : la partie commence automatiquement.'):room.status==='finished'?room.message:myTurn?(room.die?'Choisissez un pion en surbrillance.':'À vous de lancer le dé !'):room.message}</p>{room.status==='waiting'?room.player_limit!==null?<WaitingIndicator game="ludo" current={room.players.length} total={room.player_limit}/>:room.host===room.me?<button className="ludo-primary" disabled={busy||room.players.length<(room.player_limit ?? 2)} onClick={()=>void call('ludo_start',{p_code:room.code})}><Users size={18}/> Commencer ({room.players.length}/{room.player_limit ?? 4})</button>:<span>En attente du créateur…</span>:room.status==='playing'?<button className={`ludo-dice ${rolling ? "is-rolling" : ""}`} disabled={!myTurn||room.die!==null||busy||rolling} onClick={()=>{setRolling(true);void call('ludo_roll',{p_code:room.code});}} aria-label={room.die?`Dé : ${room.die}`:"Lancer le dé"}><DiceFace value={room.die}/></button>:<button className="ludo-primary" onClick={()=>void leave()}>Retour aux jeux</button>}</div></main>}{error&&<div className="ludo-error" role="alert">{error}</div>}</div>;
 }
