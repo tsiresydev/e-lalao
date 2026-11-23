@@ -7,7 +7,7 @@ export function newGame(names = ['Vous', 'Léon', 'Camille', 'Sacha']): Game {
   const deck: Tile[] = [];
   for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) deck.push({ id: `${a}-${b}`, a, b });
   for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
-  const count = names.length === 2 ? 7 : names.length === 3 ? 6 : 7;
+  const count = 7;
   const players = names.map(name => ({ name, hand: deck.splice(0, count), score: 0 }));
   // If no double was dealt, the highest tile opens instead.
   const all = players.flatMap((p, index) => p.hand.map(tile => ({ tile, index })));
