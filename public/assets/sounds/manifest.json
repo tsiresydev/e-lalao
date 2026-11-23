@@ -1,0 +1,20 @@
+{
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "author": "Kenney Vleugels (Kenney.nl)",
+  "source": "Casino Audio",
+  "origin": "https://kenney.nl/assets/casino-audio",
+  "downloadMirror": "https://cc0-sounds.exi.software/collection/kenney_casinoaudio/",
+  "sounds": [
+    {"name":"Pose 1","path":"movement/chipLay1.ogg","category":"movement"},
+    {"name":"Pose 2","path":"movement/chipLay2.ogg","category":"movement"},
+    {"name":"Glissement","path":"movement/cardSlide1.ogg","category":"movement"},
+    {"name":"Lancer de dés","path":"gameplay/diceThrow1.ogg","category":"gameplay"},
+    {"name":"Capture","path":"gameplay/chipsCollide1.ogg","category":"gameplay"},
+    {"name":"Sélection","path":"ui/dieGrab1.ogg","category":"ui"},
+    {"name":"Clic","path":"ui/click_001.ogg","category":"ui","source":"Interface Sounds","origin":"https://kenney.nl/assets/interface-sounds"},
+    {"name":"Résultat positif","path":"victory/jingles_PIZZI03.ogg","category":"victory","source":"Music Jingles","origin":"https://kenney.nl/assets/music-jingles"},
+    {"name":"Résultat sobre","path":"defeat/jingles_PIZZI04.ogg","category":"defeat","source":"Music Jingles","origin":"https://kenney.nl/assets/music-jingles"},
+    {"name":"Forest Ambience","path":"ambient/forest-ambience.mp3","category":"ambient","author":"TinyWorlds","license":"CC0-1.0","source":"OpenGameArt","origin":"https://opengameart.org/content/forest-ambience","downloadMirror":"https://nullrights.com/track/t2n92cief7"}
+  ]
+}

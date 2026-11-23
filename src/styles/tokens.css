@@ -1,0 +1,74 @@
+/* Kopaka — "Club de table, édition imprimée".
+   Une seule source de vérité pour la couleur, la typographie et le mouvement.
+   Les noms historiques --kp-* sont conservés pour ne rien casser. */
+:root {
+  /* Fond & surfaces : encre chaude, jamais de dégradé décoratif. */
+  --kp-bg:#10191d;
+  --kp-bg-deep:#0b1316;
+  --kp-surface:#17272c;
+  --kp-surface-raised:#20343a;
+  --kp-surface-inset:#0d181c;
+  --kp-border:#36515a;
+  --kp-border-soft:#29424a;
+
+  /* Texte */
+  --kp-text:#f4f1e8;
+  --kp-muted:#b9c6c1;
+  --kp-subtle:#93a5a0;
+
+  /* Accents : laiton en ponctuation, pas en paint-url. */
+  --kp-gold:#d8b46a;
+  --kp-gold-hover:#edcf90;
+  --kp-on-gold:#241b0b;
+  --kp-success:#86c5a2;
+  --kp-danger:#df7a63;
+  --kp-info:#8fbfd0;
+  --kp-focus:#f0d38f;
+  --kp-brass:var(--kp-gold);
+  --kp-brass-hi:var(--kp-gold-hover);
+
+  /* Plateaux : un aplat par jeu, le plateau reste le héros. */
+  --kp-felt-domino:#0e4741;
+  --kp-felt-ludo:#233f78;
+  --kp-felt-faritany:#2a3f55;
+
+  /* Typographie : deux familles seulement, déjà présentes dans le projet. */
+  --kp-font:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --kp-font-ui:var(--kp-font);
+  --kp-font-display:'Playfair Display',Georgia,serif;
+  --kp-fs-1:12px;
+  --kp-fs-2:14px;
+  --kp-fs-3:16px;
+  --kp-fs-4:20px;
+  --kp-fs-5:28px;
+  --kp-fs-6:40px;
+  --kp-fs-7:56px;
+
+  /* Rayons, ombres, espacements. */
+  --kp-radius-sm:8px;
+  --kp-radius:12px;
+  --kp-radius-lg:16px;
+  --kp-shadow-panel:inset 0 1px #ffffff0a,0 8px 24px #00000038;
+  --kp-shadow-button:0 2px 0 #00000055;
+  --kp-shadow-overlay:0 24px 64px #00000070;
+  --kp-shadow:var(--kp-shadow-panel);
+  --kp-space-1:4px;
+  --kp-space-2:8px;
+  --kp-space-3:12px;
+  --kp-space-4:16px;
+  --kp-space-6:24px;
+  --kp-space-8:32px;
+  --kp-space-12:48px;
+  --kp-space-16:64px;
+  --kp-header-h:64px;
+  --kp-header-h-compact:48px;
+
+  /* Mouvement sobre et unique. */
+  --kp-ease:cubic-bezier(.2,.7,.3,1);
+  --kp-duration:160ms;
+
+  font-family:var(--kp-font-ui);
+  color:var(--kp-text);
+  background:var(--kp-bg-deep);
+  font-synthesis:none;
+}

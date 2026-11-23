@@ -1,0 +1,27 @@
+/* Phase 7 — état de chargement partagé pour les imports différés. */
+.domino-round-modal{max-height:90dvh;overflow-y:auto}
+.domino-round-hands{text-align:left;margin:16px 0}.domino-round-hand{margin:10px 0}.domino-round-hand strong{font-size:13px}.domino-round-tiles{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px}
+.recap-modal.modal{width:min(720px,calc(100vw - 24px));max-width:720px;padding:24px;background:#19222e;color:#eef2f4;text-align:left;border:1px solid #34404f;border-radius:16px;box-shadow:0 20px 60px #0009}
+.recap-heading{border-bottom:1px solid #394452;padding-bottom:14px}.recap-modal .recap-heading h2{color:#fff;margin:5px 0 0;font-size:24px}.recap-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:#f6b44a}
+.recap-modal .domino-round-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.recap-modal .domino-round-hands h3{grid-column:1/-1;margin:0;color:#cbd4dc;font-size:13px}.recap-modal .domino-round-hand{min-width:0;margin:0;padding:12px;background:#222e3c;border-radius:10px}.recap-modal .domino-round-hand strong{color:#e7edf0}.recap-empty,.recap-unavailable{color:#b6c2cb;font-size:13px}
+.recap-scores{margin:20px 0}.recap-modal .recap-scores h3{margin:0 0 12px;color:#fff;font-size:15px}.recap-score{margin:12px 0}.recap-score-line{display:flex;justify-content:space-between;gap:10px;font-size:14px}.recap-progress{height:7px;margin-top:7px;background:#394653;border-radius:99px;overflow:hidden}.recap-progress span{display:block;height:100%;background:#54bc83;border-radius:inherit}.recap-status{text-align:center}.recap-status p{width:fit-content;max-width:100%;margin:8px auto;padding:8px 14px;border-radius:8px;font-size:13px}.recap-modal .recap-blocked{background:#743b3e;color:#fff}.recap-modal .recap-message{background:#303d4a;color:#fff}.recap-modal .recap-champion{background:#226745;color:#fff;font-weight:700}.recap-modal .recap-countdown{text-align:center;color:#cbd4dc;font-size:13px}.recap-modal .recap-action{display:flex;justify-content:center;width:100%;margin-top:16px;background:#dc8535;color:#fff}.recap-modal .recap-action:hover{background:#e89948}@media(max-width:480px){.recap-modal .domino-round-hands{grid-template-columns:1fr}.recap-modal.modal{padding:18px}}
+.kp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:100dvh;background:var(--kp-bg-deep);color:var(--kp-muted)}
+.kp-loading-mark{display:grid;place-items:center;width:52px;height:52px;border:1px solid var(--kp-brass);border-radius:14px;transform:rotate(-8deg);color:var(--kp-brass-hi);font-size:24px;animation:kp-loading-breathe 1.4s var(--kp-ease) infinite}
+.kp-loading-label{font-family:var(--kp-font-display);font-size:16px;letter-spacing:.03em}
+@keyframes kp-loading-breathe{0%,100%{opacity:.55;transform:rotate(-8deg) scale(.96)}50%{opacity:1;transform:rotate(-8deg) scale(1.04)}}
+@media(prefers-reduced-motion:reduce){.kp-loading-mark{animation:none}}
+.audio-controls{position:fixed;z-index:90;bottom:max(12px,env(safe-area-inset-bottom));right:max(12px,env(safe-area-inset-right));display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #ffffff40;border-radius:12px;background:#142c28;color:#fff;box-shadow:0 4px 16px #0005}
+.audio-controls button{display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+.audio-controls button:focus-visible,.audio-controls input:focus-visible{outline:2px solid #ffda80;outline-offset:2px}
+.audio-controls input{width:76px;accent-color:#dbb968}
+.audio-settings{position:absolute;right:0;bottom:calc(100% + 8px);width:220px;max-height:calc(100dvh - 90px);overflow-y:auto;padding:14px;display:grid;gap:12px;border:1px solid #ffffff40;border-radius:12px;background:#142c28;color:#fff;box-shadow:0 4px 16px #0005}
+.audio-settings label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.audio-settings input[type=checkbox]{width:auto}
+.domino-round-backdrop{z-index:80}
+.domino-round-modal{max-height:calc(100dvh - 32px);overflow:auto}
+.domino-round-scores{list-style:none;margin:12px 0;padding:0}
+.domino-round-scores li{display:flex;justify-content:space-between;gap:20px;padding:8px 0;border-bottom:1px solid #ffffff24}
+/* Shake the blocked hand once, without tinting or blurring the tiles. */
+.passing-hand .hand-tile:disabled{background:transparent;opacity:1;filter:none;animation:domino-pass-shake 1s ease-in-out 1}
+@keyframes domino-pass-shake{0%,100%{transform:translateX(0)}15%,45%,75%{transform:translateX(-3px)}30%,60%,90%{transform:translateX(3px)}}
+@media(prefers-reduced-motion:reduce){.passing-hand .hand-tile:disabled{animation:none;filter:none}}

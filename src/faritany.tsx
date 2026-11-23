@@ -1,15 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, CircleHelp, Flag, Minus, Plus, RotateCcw, X } from 'lucide-react';
 import { computerMove, FARITANY_COORD_LIMIT, newFaritany, placePoint, score } from './faritany-game';
-import './faritany.css';
 import { FaritanyLobby, useFaritanyOnline } from './faritany-online';
 import { TurnCountdown } from './turn-countdown';
+import { audio } from './audio';
+import { celebrate } from './celebration';
 
 export function Faritany({back}:{back:()=>void}) {
   const [game,setGame]=useState(()=>newFaritany());
   const [mode,setMode]=useState<'local'|'computer'|'online'|null>(null);
   const online=useFaritanyOnline();
   const onlineRoom=online.room;
+  const previousPoints=useRef<{length:number; captured:number; finished:boolean} | null>(null);
+  useEffect(()=>{
+    if (!mode || (mode==='online' && !onlineRoom)) { previousPoints.current=null; return; }
+    const next={length:game.points.length,captured:game.points.filter(point=>point.captured).length,finished:game.finished};
+    const previous=previousPoints.current;
+    if(previous && !previous.finished && next.finished) {
+      const blueScore=score(game,'blue'), redScore=score(game,'red');
+      if(blueScore!==redScore) {
+        const won=mode==='local' || (blueScore>redScore ? 'blue':'red') === (mode==='online'?onlineColor:'blue');
+        if(won) celebrate();
+        void audio.playSound(won ? 'victory':'defeat');
+      }
+    } else if(previous && next.length===previous.length+1) void audio.playSound(next.captured>previous.captured?'capture':'place');
+    previousPoints.current=next;
+  },[game,mode,onlineRoom]);
   const onlineColor=onlineRoom?.players.find(p=>p.uid===onlineRoom.me)?.seat===0?'blue':'red';
   useEffect(()=>{if(mode==='online' && onlineRoom)setGame(onlineRoom.game);},[mode,onlineRoom]);
   const [target,setTarget]=useState(10);
@@ -39,10 +55,10 @@ export function Faritany({back}:{back:()=>void}) {
   const minX=Math.max(-FARITANY_COORD_LIMIT,Math.floor((viewX-margin)/step)-1),maxX=Math.min(FARITANY_COORD_LIMIT,Math.ceil((viewX+viewWidth-margin)/step)+1);
   const minY=Math.max(-FARITANY_COORD_LIMIT,Math.floor((viewY-margin)/step)-1),maxY=Math.min(FARITANY_COORD_LIMIT,Math.ceil((viewY+viewSize-margin)/step)+1);
   const columns=Array.from({length:Math.max(0,maxX-minX+1)},(_,i)=>minX+i),rows=Array.from({length:Math.max(0,maxY-minY+1)},(_,i)=>minY+i);
-  if(!mode)return <div className="faritany-setup-page"><header className="faritany-header"><button onClick={()=>{if(mode==='online'){if(window.confirm('Quitter annule la partie. Continuer ?'))void online.leave().then(ok=>{if(ok)setMode(null);});}else back();}}><ArrowLeft size={18}/> <span>{mode==='online'?'Quitter le salon':'Tous les jeux'}</span></button><strong>KOPAKA <span>/ FARITANY</span></strong><button onClick={()=>setRules(true)} aria-label="Règles"><CircleHelp size={20}/></button></header><main className="faritany-setup"><span>LE JEU DES TERRITOIRES</span><h1>Jouer au Faritany<span>.</span></h1><p>Choisissez votre objectif et votre adversaire.</p><label htmlFor="faritany-target">POINTS À CAPTURER POUR GAGNER</label><select id="faritany-target" value={target} onChange={e=>setTarget(Number(e.target.value))}>{[5,10,15,20,30].map(n=><option key={n} value={n}>{n} points</option>)}</select><div className="faritany-modes"><button onClick={()=>{setGame(newFaritany(15,target));setMode('computer');}}><strong>Contre l’ordinateur</strong><small>Affrontez la machine sur cet appareil.</small></button><button onClick={()=>{setGame(newFaritany(15,target));setMode('local');}}><strong>À deux sur cet appareil</strong><small>Jouez chacun votre tour sur la même grille.</small></button><button onClick={()=>{setMode('online');const saved=sessionStorage.getItem('faritany-room');if(saved)void online.refresh(saved);}}><strong>Entre amis en ligne</strong><small>Salon priv? ? deux joueurs.</small></button></div>{rules && <div className="modal-backdrop" onClick={()=>setRules(false)}><div className="modal faritany-rules" role="dialog" aria-modal="true" aria-label="Règles du Faritany" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setRules(false)} aria-label="Fermer"><X size={20}/></button><h2>Les règles du Faritany</h2><p>Placez vos points à tour de rôle. Entourez des points adverses avec les vôtres pour les capturer. Le premier à atteindre le score choisi gagne.</p><button className="primary-button" onClick={()=>setRules(false)}>C’est compris</button></div></div>}</main></div>;
+  if(!mode)return <div className="faritany-setup-page"><header className="faritany-header"><button onClick={()=>{if(online.room){if(window.confirm('Quitter annule la partie. Continuer ?'))void online.leave().then(ok=>{if(ok)back();});}else back();}}><ArrowLeft size={18}/> <span>{mode==='online'?'Quitter le salon':'Tous les jeux'}</span></button><strong>KOPAKA <span>/ FARITANY</span></strong><button onClick={()=>setRules(true)} aria-label="Règles"><CircleHelp size={20}/></button></header><main className="faritany-setup"><span>LE JEU DES TERRITOIRES</span><h1>Jouer au Faritany<span>.</span></h1><p>Choisissez votre objectif et votre adversaire.</p><label htmlFor="faritany-target">POINTS À CAPTURER POUR GAGNER</label><select id="faritany-target" value={target} onChange={e=>setTarget(Number(e.target.value))}>{[5,10,15,20,30].map(n=><option key={n} value={n}>{n} points</option>)}</select><div className="faritany-modes"><button onClick={()=>{setGame(newFaritany(15,target));setMode('computer');}}><strong>Contre l’ordinateur</strong><small>Affrontez la machine sur cet appareil.</small></button><button onClick={()=>{setGame(newFaritany(15,target));setMode('local');}}><strong>À deux sur cet appareil</strong><small>Jouez chacun votre tour sur la même grille.</small></button><button onClick={()=>{setMode('online');const saved=sessionStorage.getItem('faritany-room');if(saved)void online.refresh(saved);}}><strong>Entre amis en ligne</strong><small>Salon priv? ? deux joueurs.</small></button></div>{rules && <div className="modal-backdrop" onClick={()=>setRules(false)}><div className="modal faritany-rules" role="dialog" aria-modal="true" aria-label="Règles du Faritany" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setRules(false)} aria-label="Fermer"><X size={20}/></button><h2>Les règles du Faritany</h2><p>Placez vos points à tour de rôle. Entourez des points adverses avec les vôtres pour les capturer. Le premier à atteindre le score choisi gagne.</p><button className="primary-button" onClick={()=>setRules(false)}>C’est compris</button></div></div>}</main></div>;
   if(mode==='online' && (!onlineRoom || onlineRoom.status==='waiting'))return <FaritanyLobby online={online} target={target} onBack={()=>void online.leave().then(ok=>{if(ok)setMode(null);})}/>;
   return <div className="faritany-page">
-    <header className="faritany-header"><button onClick={back}><ArrowLeft size={18}/> <span>Tous les jeux</span></button><strong>KOPAKA <span>/ FARITANY</span></strong><TurnCountdown deadline={onlineRoom?.turn_deadline} active={mode==='online'&&onlineRoom?.status==='playing'}/><button onClick={()=>setRules(true)} aria-label="Règles du Faritany"><CircleHelp size={20}/></button></header>
+    <header className="faritany-header"><button onClick={()=>{if(mode==='online'){if(window.confirm('Quitter annule la partie. Continuer ?'))void online.leave().then(ok=>{if(ok)setMode(null);});}else back();}}><ArrowLeft size={18}/> <span>Tous les jeux</span></button><strong>KOPAKA <span>/ FARITANY</span></strong><TurnCountdown deadline={onlineRoom?.turn_deadline} active={mode==='online'&&onlineRoom?.status==='playing'}/><button onClick={()=>setRules(true)} aria-label="Règles du Faritany"><CircleHelp size={20}/></button></header>
     <main className="faritany-main">
       <div className="faritany-intro"><div><span>UN JEU DE STRATÉGIE MALGACHE</span><h1>Faritany<span>.</span></h1><p>Entourez les points adverses pour conquérir votre territoire.</p></div><div className="faritany-local">● &nbsp; 2 JOUEURS · SUR CET APPAREIL</div></div>
       <section className="faritany-card" aria-label="Partie de Faritany">

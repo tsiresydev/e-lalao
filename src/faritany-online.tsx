@@ -4,6 +4,7 @@ import { placePoint, type FaritanyGame } from './faritany-game';
 import { RoomChoice } from './room-choice';
 import { WaitingIndicator } from './waiting-indicator';
 import { PrivateRoomWelcome } from './private-room-welcome';
+import { CopyCodeButton, RoomStatusPill } from './shell';
 import { ArrowLeft } from 'lucide-react';
 import { useTurnExpiry } from './room-presence';
 
@@ -36,7 +37,7 @@ export function useFaritanyOnline() {
   },[]);
   const refresh=useCallback((code:string)=>call('faritany_state',{p_code:code},true),[call]);
   useEffect(()=>{if(!room||!client)return;const c=client,code=room.code;let cancelled=false;let channel:ReturnType<typeof c.channel>|undefined;
-    void c.realtime.setAuth().then(()=>{if(cancelled)return;channel=c.channel(`kopaka-faritany:${code}`,{config:{private:true}}).on('broadcast',{event:'changed'},()=>void refresh(code)).subscribe(status=>{if(status==='SUBSCRIBED')void refresh(code);});});
+    void c.realtime.setAuth().then(()=>{if(cancelled)return;channel=c.channel(`kopaka-faritany:${code}`,{config:{private:true}}).on('broadcast',{event:'changed'},()=>void refresh(code)).subscribe(status=>{if(status==='SUBSCRIBED')void refresh(code);});}).catch(()=>{/* Le polling continue si Realtime est indisponible. */});
     const timer=window.setInterval(()=>void refresh(code),5000);
     return()=>{cancelled=true;window.clearInterval(timer);if(channel)void c.removeChannel(channel);};
   },[room?.code,refresh]);
@@ -70,12 +71,12 @@ export function useFaritanyOnline() {
 }
 
 export function FaritanyLobby({online,target,onBack}:{online:ReturnType<typeof useFaritanyOnline>;target:number;onBack:()=>void}){
-  const [name,setName]=useState(''),[code,setCode]=useState(''),[copied,setCopied]=useState(false);
+  const [name,setName]=useState(''),[code,setCode]=useState('');
   const {room,busy,error,call,cancel}=online;
   if(!room)return <div className="online-page"><header className="online-header"><button onClick={onBack}><ArrowLeft size={17}/> Retour</button><strong>KOPAKA</strong><span>PARTIE ENTRE AMIS</span></header><PrivateRoomWelcome description="Créez un salon et partagez son code, ou rejoignez une partie de Faritany à deux joueurs."><RoomChoice busy={busy} error={error} name={name} setName={setName} code={code} setCode={setCode} createOptions={<p>Objectif choisi : {target} points.</p>} onCreate={()=>void call('faritany_create',{p_name:name,p_target:target})} onJoin={()=>void call('faritany_join',{p_name:name,p_code:code})}/></PrivateRoomWelcome></div>;
   return <div className="faritany-setup-page"><header className="faritany-header"><button onClick={onBack}>← Retour</button><strong>KOPAKA <span>/ FARITANY</span></strong><span/></header><main className="faritany-setup">
     <span>PARTIE PRIVÉE · 2 JOUEURS</span><h1>Entre amis<span>.</span></h1>
     {error&&<p role="alert">{error}</p>}
-    <p>Partagez ce code avec votre ami :</p><strong className="faritany-invite-code">{room.code}</strong><div className="faritany-modes"><button onClick={()=>void navigator.clipboard.writeText(room.code).then(()=>setCopied(true)).catch(()=>setCopied(false))}><strong>{copied?'Code copié':'Copier le code'}</strong></button>{room.host===room.me&&room.status==='waiting'&&<button className="cancel-room-button" disabled={busy} onClick={()=>void cancel()}><strong>Annuler le salon</strong></button>}</div><WaitingIndicator game="faritany" current={room.players.length} total={2}/>
+    <p>Partagez ce code avec votre ami :</p><div className="faritany-invite-row"><RoomStatusPill status={room.status}/><strong className="faritany-invite-code">{room.code}</strong></div><div className="faritany-modes"><CopyCodeButton code={room.code}/>{room.host===room.me&&room.status==='waiting'&&<button className="cancel-room-button" disabled={busy} onClick={()=>void cancel()}><strong>Annuler le salon</strong></button>}</div><WaitingIndicator game="faritany" current={room.players.length} total={2}/>
   </main></div>;
 }

@@ -1,0 +1,77 @@
+/* Phase 3 — shell, hub, salons et feedback partagés.
+   Chargé après design-system.css : il affine sans réécrire les moteurs. */
+
+.shell-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.shell-brand-mark{position:relative;width:38px;height:38px;flex:none;border:1px solid var(--kp-brass);border-radius:9px;background:var(--kp-surface-inset);transform:rotate(-6deg);box-shadow:inset 0 1px #ffffff10}
+.shell-brand-mark i{position:absolute;left:7px;right:7px;border-top:1.5px solid var(--kp-brass)}
+.shell-brand-mark i:nth-child(1){top:11px}
+.shell-brand-mark i:nth-child(2){top:18px;left:12px;right:12px}
+.shell-brand-mark i:nth-child(3){top:25px}
+.shell-brand-copy strong{display:block;color:var(--kp-text);font-family:var(--kp-font-display);font-size:18px;font-weight:600;letter-spacing:.14em;line-height:1}
+.shell-brand-copy small{display:block;margin-top:5px;color:var(--kp-subtle);font-size:8px;font-weight:700;letter-spacing:.16em}
+.shell-brand--compact .shell-brand-mark{width:32px;height:32px;border-radius:7px}
+.shell-brand--compact .shell-brand-copy strong{font-size:14px}
+
+.game-menu{position:relative;display:flex}
+.game-menu-trigger{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--kp-border);border-radius:var(--kp-radius-sm);background:var(--kp-surface-inset);color:var(--kp-text)}
+.game-menu-trigger:hover{border-color:var(--kp-brass);color:var(--kp-brass-hi)}
+.game-menu-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:70;display:grid;gap:2px;min-width:214px;padding:8px;border:1px solid var(--kp-border);border-radius:var(--kp-radius);background:var(--kp-surface-raised);box-shadow:var(--kp-shadow-overlay)}
+.game-menu-title{display:block;padding:6px 10px 8px;color:var(--kp-brass);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.game-menu-panel button{display:flex;align-items:center;gap:10px;min-height:40px;padding:8px 10px;border:0;border-radius:var(--kp-radius-sm);background:none;color:var(--kp-text);font-size:13px;font-weight:600;text-align:left}
+.game-menu-panel button:hover{background:var(--kp-surface);color:var(--kp-brass-hi)}
+
+.copy-code-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:7px 12px;border:1px solid var(--kp-border);border-radius:var(--kp-radius-sm);background:var(--kp-surface-inset);color:var(--kp-text);font-size:12px;font-weight:700}
+.copy-code-button:hover{border-color:var(--kp-brass);color:var(--kp-brass-hi)}
+.copy-code-button--compact{min-height:32px;padding:5px 9px;font-size:11px}
+
+.room-status{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--kp-border);border-radius:999px;padding:4px 10px;background:var(--kp-surface-inset);color:var(--kp-muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.room-status--waiting{color:var(--kp-brass);border-color:#d8b46a55}
+.room-status--playing{color:var(--kp-success);border-color:#86c5a255}
+.room-status--finished{color:var(--kp-subtle)}
+
+.waiting-indicator{gap:6px;padding:18px;border-radius:var(--kp-radius);background:var(--kp-surface-inset)}
+.waiting-indicator .room-status{margin:2px 0 4px}
+.waiting-indicator strong{color:var(--kp-text);font-family:var(--kp-font-display);font-size:18px;font-weight:600}
+.waiting-indicator>span:last-child{max-width:340px;color:var(--kp-muted);line-height:1.5}
+
+/* Accueil : même grain que les salons, sans gradient décoratif. */
+.hub-header{height:var(--kp-header-h);padding:0 max(24px,calc((100% - 1120px)/2));gap:16px}
+.hub-header-actions{display:flex;align-items:center;gap:14px}
+.hub-header-note{display:flex;align-items:center;gap:8px;color:var(--kp-muted);font-size:11px}
+.hub-header-note>span{width:7px;height:7px;border-radius:50%;background:var(--kp-success);box-shadow:0 0 0 4px #86c5a220}
+.hub-card{transition:transform var(--kp-duration) var(--kp-ease),border-color var(--kp-duration) var(--kp-ease)}
+@media(hover:hover){.hub-card:hover{transform:translateY(-3px);border-color:var(--kp-brass)}}
+.hub-art{border-bottom:1px solid var(--kp-border-soft)}
+.hub-art-caption{color:#ffffffb8}
+.hub-card-body h3{font-size:26px}
+.hub-card-bottom>span{color:var(--kp-muted)}
+.hub-faritany-art{background-color:var(--kp-felt-faritany);background-image:linear-gradient(#ffffff12 1px,transparent 1px),linear-gradient(90deg,#ffffff12 1px,transparent 1px);background-size:18px 18px}
+.hub-faritany-art polygon{fill:#8fbfd0;fill-opacity:.22;stroke:#c2e1e8}
+.hub-faritany-art circle{fill:#c2e1e8}
+.hub-faritany-art .hub-faritany-red{fill:var(--kp-danger)}
+.hub-faritany-art .hub-art-caption{color:#d8e9ec}
+
+/* Salon : dialogue et actions lisibles sur fond sombre. */
+.room-choice-trigger{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.room-choice-dialog{background:var(--kp-surface);border-color:var(--kp-border);box-shadow:var(--kp-shadow-overlay)}
+.room-choice-head span{color:var(--kp-brass);font-weight:700}
+.room-choice-head h2{color:var(--kp-text);font-family:var(--kp-font-display);font-weight:600}
+.room-choice-close{display:grid;place-items:center;border-radius:var(--kp-radius-sm);color:var(--kp-muted)}
+.room-choice-close:hover{background:var(--kp-surface-raised);color:var(--kp-text)}
+.room-choice-actions button{display:flex;align-items:center;gap:12px;background:var(--kp-surface-inset);border-color:var(--kp-border);color:var(--kp-text)}
+.room-choice-action-icon{display:grid;place-items:center;width:38px;height:38px;flex:none;border:1px solid var(--kp-border);border-radius:var(--kp-radius-sm);color:var(--kp-brass)}
+.room-choice-actions strong{display:block;font-size:15px}
+.room-choice-actions small{display:block;color:var(--kp-muted);line-height:1.4}
+.room-choice-dialog form label{color:var(--kp-muted)}
+.room-choice-dialog input,.room-choice-dialog select{background:var(--kp-bg-deep);border-color:var(--kp-border);color:var(--kp-text)}
+.room-choice-back{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--kp-surface-inset);border-color:var(--kp-border);color:var(--kp-text)}
+.room-choice-error.kp-alert{padding:10px 12px}
+
+.faritany-invite-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 14px}
+.faritany-invite-code{font-family:var(--kp-font-display);font-size:24px;letter-spacing:.18em;color:var(--kp-brass-hi)}
+
+@media(max-width:700px){
+  .hub-header-actions .hub-header-note{display:none}
+  .game-menu-panel{right:-8px;min-width:200px}
+  .waiting-indicator{padding:14px}
+}

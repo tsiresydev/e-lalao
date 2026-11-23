@@ -1,4 +1,4 @@
-import './waiting-indicator.css';
+import { RoomStatusPill } from './shell';
 
 type Game = 'domino' | 'ludo' | 'faritany';
 
@@ -29,8 +29,9 @@ function WaitingArt({game}:{game:Game}) {
 }
 
 export function WaitingIndicator({current,total,game}:{current:number;total:number;game:Game}) {
-  return <div className="waiting-indicator" role="status" aria-live="polite">
+  return <div className="waiting-indicator kp-surface" role="status" aria-live="polite">
     <WaitingArt game={game}/>
+    <RoomStatusPill status="waiting"/>
     <strong>En attente des joueurs</strong>
     <span>{current} / {total} joueurs · La partie démarre automatiquement lorsque le salon est complet.</span>
   </div>;

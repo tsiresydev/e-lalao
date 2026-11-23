@@ -1,0 +1,16 @@
+/* Point d'entrée CSS unique. L'ordre est volontaire :
+   1. utilitaires Tailwind (aucun reset, aucun composant),
+   2. styles historiques (définitions de base),
+   3. design system (tokens + surcharges partagées), chargé en dernier. */
+@import './tokens.css';
+@import '../tailwind.css';
+@import '../style.css';
+@import '../game-hub.css';
+@import '../waiting-indicator.css';
+@import '../room-choice.css';
+@import '../ludo.css';
+@import '../faritany.css';
+@import '../design-system.css';
+@import './shell.css';
+@import './ludo-phase4.css';
+@import './phase7.css';

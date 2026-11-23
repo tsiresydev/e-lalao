@@ -32,7 +32,7 @@ export function play(game: Game, id: string, side: 'left' | 'right'): Game {
   const players = game.players.map((p, i) => i === game.turn ? { ...p, hand: p.hand.filter(t => t.id !== id) } : p);
   const chain = side === 'left' ? [placed, ...game.chain] : [...game.chain, placed];
   const won = players[game.turn].hand.length === 0;
-  if (won) players[game.turn] = { ...players[game.turn], score: players.reduce((sum, p) => sum + p.hand.reduce((s, t) => s + t.a + t.b, 0), 0) };
+  if (won) players[game.turn] = { ...players[game.turn], score: players[game.turn].score + players.reduce((sum, p) => sum + p.hand.reduce((s, t) => s + t.a + t.b, 0), 0) };
   return { ...game, players, chain, passes: 0, winner: won ? game.turn : null, turn: won ? game.turn : (game.turn + 1) % players.length, message: won ? `${player.name} remporte la manche !` : `${player.name} a posé ${tile.a} · ${tile.b}.` };
 }
 export function pass(game: Game): Game {
@@ -41,7 +41,7 @@ export function pass(game: Game): Game {
   if (passes >= game.players.length) {
     const totals = game.players.map(p => p.hand.reduce((sum, t) => sum + t.a + t.b, 0));
     const lowest = Math.min(...totals), winners = totals.map((n, i) => n === lowest ? i : -1).filter(i => i >= 0);
-    const players = game.players.map((p, i) => i === winners[0] && winners.length === 1 ? { ...p, score: totals.reduce((a, b) => a + b, 0) - totals[i] } : p);
+    const players = game.players.map((p, i) => i === winners[0] && winners.length === 1 ? { ...p, score: p.score + totals.reduce((a, b) => a + b, 0) - totals[i] } : p);
     return { ...game, players, passes, winner: winners[0], message: winners.length > 1 ? `Partie bloquée : égalité entre ${winners.map(i => players[i].name).join(' et ')}.` : `Partie bloquée : ${players[winners[0]].name} gagne avec ${lowest} points en main.` };
   }
   return { ...game, passes, turn: (game.turn + 1) % game.players.length, message: `${game.players[game.turn].name} passe son tour.` };

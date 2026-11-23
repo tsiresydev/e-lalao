@@ -1,0 +1,3 @@
+/* Utilitaires seulement : aucun reset, aucune base, aucun composant.
+   Importé avant le CSS historique pour qu'aucun utilitaire ne l'écrase. */
+@tailwind utilities;

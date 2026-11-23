@@ -1,0 +1,44 @@
+/* Phase 4 — Ludo : même vocabulaire visuel que le reste de la plateforme. */
+
+.ludo-page{background:var(--kp-bg);color:var(--kp-text)}
+.ludo-header{background:var(--kp-surface);border-bottom:1px solid var(--kp-border);box-shadow:none}
+.ludo-header button{color:var(--kp-text)}
+.ludo-header strong span{color:var(--kp-brass)}
+.ludo-roomline{flex-wrap:wrap;justify-content:center;gap:8px 12px}
+.ludo-roomline>span{color:var(--kp-muted)}
+.ludo-roomline>span strong{color:var(--kp-brass-hi)}
+
+.ludo-board{border:5px solid #755832;background:#f5f2e9;box-shadow:var(--kp-shadow-panel),0 0 0 1px var(--kp-brass)}
+.ludo-base.is-active>rect:first-of-type{filter:brightness(1.08)}
+.ludo-pawn.playable-pawn{cursor:pointer}
+.ludo-pawn-animated{transition:none}
+.ludo-pawn:focus{outline:none}
+.playable-pawn .pawn-body{stroke:#ffe08a;stroke-width:.09}
+.playable-pawn .pawn-art{transform-box:fill-box;transform-origin:center;animation:ludo-pawn-active 1.2s ease-in-out infinite}
+@keyframes ludo-pawn-active{0%,100%{translate:0 0}50%{translate:0 -.09px}}
+
+.ludo-capture circle{transform-origin:center}
+.ludo-capture circle:first-child{animation:ludo-capture .65s var(--kp-ease) forwards}
+.ludo-capture circle:last-child{animation:ludo-capture-ring .65s var(--kp-ease) forwards}
+@keyframes ludo-capture{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
+@keyframes ludo-capture-ring{0%{opacity:.55;transform:scale(.7)}100%{opacity:0;transform:scale(2.1)}}
+
+.ludo-victory text{font-family:var(--kp-font-display)}
+.ludo-board--finished{filter:saturate(.96)}
+.victory-celebration{position:fixed;inset:0;z-index:70;pointer-events:none}
+.victory-celebration canvas{display:block;width:100%;height:100%}
+
+.ludo-dice:not(:disabled):hover .ludo-dice-face{transform:translateY(-2px);border-color:var(--kp-brass)}
+.ludo-dice-face{position:relative;background:#fffdf5;border-color:#d8cfb7}
+.ludo-dice-face.has-3d{background:transparent;border-color:transparent;box-shadow:none}
+.ludo-dice-3d{position:absolute;inset:-30%;display:block;pointer-events:none}
+.ludo-dice-3d canvas{width:100%;height:100%;display:block}
+.ludo-dice.is-rolling .ludo-dice-face.has-3d{animation:ludo-dice-roll-3d .55s cubic-bezier(.2,.7,.25,1)}
+@keyframes ludo-dice-roll-3d{0%,100%{transform:translateY(0)}30%{transform:translateY(-14px)}70%{transform:translateY(-5px)}}
+.ludo-error{position:fixed;bottom:12px;left:12px;right:12px;max-width:500px;margin:auto;z-index:80}
+
+@media(prefers-reduced-motion:reduce){
+  .playable-pawn .pawn-art,.ludo-capture circle{animation:none}
+  .ludo-capture circle{opacity:0}
+  .ludo-dice.is-rolling .ludo-dice-face.has-3d{animation:none}
+}

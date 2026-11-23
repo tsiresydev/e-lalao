@@ -25,4 +25,12 @@ describe('domino bloc', () => {
     expect(play(game,tile.id,'right').chain.slice(-1)[0]).toMatchObject({id:'1-3',left:1,right:3});
     expect(game.players[0].hand).toHaveLength(3);
   });
+  it('cumule les points de la manche au score existant', () => {
+    const game:Game={players:[{name:'Vous',score:30,hand:[{id:'1-1',a:1,b:1}]},{name:'Machine',score:8,hand:[{id:'2-3',a:2,b:3}]}],chain:[],turn:0,passes:0,winner:null,message:'',opening:'1-1'};
+    expect(play(game,'1-1','right').players.map(player=>player.score)).toEqual([35,8]);
+  });
+  it('cumule aussi les points lorsque la partie est bloquée', () => {
+    const game:Game={players:[{name:'Vous',score:30,hand:[{id:'2-2',a:2,b:2}]},{name:'Machine',score:8,hand:[{id:'3-3',a:3,b:3}]}],chain:[{id:'1-1',a:1,b:1,left:1,right:1}],turn:0,passes:1,winner:null,message:'',opening:''};
+    expect(pass(game).players.map(player=>player.score)).toEqual([36,8]);
+  });
 });
