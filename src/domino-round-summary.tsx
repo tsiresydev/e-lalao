@@ -8,7 +8,7 @@ export function DominoRoundSummary({ players, target, message, champion, blocked
 }) {
   const handsAvailable = players.every(player => player.hand !== null);
   return <>
-    {handsAvailable ? <DominoRoundHands players={players}/> : blocked && <p className="recap-unavailable">Les dominos restants ne sont pas disponibles pour cette manche.</p>}
+    {handsAvailable ? <DominoRoundHands players={players}/> : <p className="recap-unavailable">Les dominos restants ne sont pas disponibles pour cette manche.</p>}
     <section className="recap-scores" aria-label="Scores de la partie">
       <h3>Scores</h3>
       {players.map((player, index) => <div className="recap-score" key={index}>

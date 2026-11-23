@@ -109,7 +109,8 @@ export function DominoBoard({ game, selected, choose, availableHand = [] }: {
   useLayoutEffect(() => {
     const container = ref.current?.closest<HTMLElement>('.game-column, .online-layout > section');
     container?.style.setProperty('--hand-domino-scale', String(tileScale / 1.12));
-    return () => { container?.style.removeProperty('--hand-domino-scale'); };
+    container?.style.setProperty('--board-domino-scale', String(tileScale));
+    return () => { container?.style.removeProperty('--hand-domino-scale'); container?.style.removeProperty('--board-domino-scale'); };
   }, [tileScale]);
 
   useLayoutEffect(() => {

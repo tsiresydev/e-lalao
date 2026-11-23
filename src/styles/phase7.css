@@ -1,6 +1,43 @@
 /* Phase 7 — état de chargement partagé pour les imports différés. */
 .domino-round-modal{max-height:90dvh;overflow-y:auto}
 .domino-round-hands{text-align:left;margin:16px 0}.domino-round-hand{margin:10px 0}.domino-round-hand strong{font-size:13px}.domino-round-tiles{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px}
+.domino-backs{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:2px;max-width:100px;position:relative}.domino-back{display:block;width:10px;height:19px;border:1px solid #d9c59a;border-radius:2px;background:linear-gradient(135deg,#476b55,#183c30);box-shadow:inset 0 0 0 2px #ffffff15}.domino-backs-active .domino-back{border-color:#ffdc7d;box-shadow:0 0 5px #f5ce6c99,inset 0 0 0 2px #ffffff24}.domino-backs-passing .domino-back{animation:domino-back-shake 1s ease-in-out}.domino-back-pass{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;color:#fff1c3;white-space:nowrap}.opponent .domino-backs{flex-basis:100%}.online-table{position:relative}.online-opponent-hands{position:absolute;z-index:4;top:4px;left:4px;right:4px;display:flex;justify-content:space-around;gap:4px;pointer-events:none}.online-opponent-hand{min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 6px;border-radius:6px;background:#163b2ed9;color:#f7f4dc}.online-opponent-hand strong{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}@keyframes domino-back-shake{0%,100%{transform:translateX(0)}15%,45%,75%{transform:translateX(-3px)}30%,60%,90%{transform:translateX(3px)}}@media(prefers-reduced-motion:reduce){.domino-backs-passing .domino-back{animation:none}}
+/* Dominos couchés, retournés et alignés devant chaque adversaire. */
+.domino-backs{flex-wrap:nowrap;gap:3px;max-width:none;min-width:0}
+.domino-back{position:relative;flex:none;width:32px;height:17px;border:1px solid #c8ceca;border-radius:3px;background:linear-gradient(135deg,#fffefa,#efece2);box-shadow:0 2px 2px #071c17a6,inset 0 -2px 0 #d6d3c8}
+.domino-back::after{content:none}
+.domino-backs-active .domino-back{border-color:#ffe292;box-shadow:0 0 7px #f8d26eb3,0 2px 2px #071c17a6,inset 0 -2px 0 #c8b995}
+.opponent.top-player .domino-backs{position:absolute;top:100%;left:50%;transform:translateX(-50%);z-index:3}
+.opponent.side-player .domino-backs{flex-basis:auto;width:100%;gap:1px}
+.opponent.side-player .domino-back{width:15px;height:8px}
+@media(max-width:600px){.online-opponent-hand{padding:3px}.online-opponent-hand .domino-backs{gap:1px}.online-opponent-hand .domino-back{width:18px;height:10px}.opponent.side-player .domino-back{width:9px;height:6px}}
+/* Pièces à l'échelle du plateau, dont seule la moitié dépasse du bord. */
+.domino-backs{--opponent-tile-scale:calc(var(--board-domino-scale,1) * .44);gap:3px}
+.domino-turn-marker{position:absolute;z-index:2;top:-9px;left:50%;width:7px;height:7px;transform:translateX(-50%);border-radius:50%;background:#ffd777;box-shadow:0 0 0 2px #3c4f34,0 0 7px #ffd777}
+.opponent.side-player .domino-turn-marker{top:50%;left:auto;right:-9px;transform:translateY(-50%)}
+.opponent.side-player.right-player .domino-turn-marker{right:auto;left:-9px}
+.domino-back{width:calc(62px * var(--opponent-tile-scale));height:calc(70px * var(--opponent-tile-scale));border-radius:4px}
+.opponent.top-player .domino-backs{height:calc(16px * var(--opponent-tile-scale));overflow:hidden;align-items:flex-end}
+.opponent.side-player .domino-backs{width:calc(16px * var(--opponent-tile-scale));overflow:hidden;flex-direction:column;flex-wrap:nowrap;justify-content:center;gap:3px}
+.opponent.side-player .domino-back{width:calc(70px * var(--opponent-tile-scale));height:calc(62px * var(--opponent-tile-scale))}
+.opponent.side-player:not(.right-player) .domino-backs{align-items:flex-end}
+.opponent.side-player.right-player .domino-backs{align-items:flex-start}
+.online-opponent-hand .domino-backs{height:calc(16px * var(--opponent-tile-scale));overflow:hidden;align-items:flex-end}
+.online-opponent-hand .domino-back{width:calc(62px * var(--opponent-tile-scale));height:calc(70px * var(--opponent-tile-scale))}
+.opponent.top-player .domino-backs,.opponent.side-player .domino-backs,.online-opponent-hand .domino-backs{overflow:visible}
+.opponent.top-player .domino-back,.online-opponent-hand .domino-back{clip-path:inset(50% 0 0 0)}
+.opponent.side-player:not(.right-player) .domino-back{clip-path:inset(0 0 0 50%)}
+.opponent.side-player.right-player .domino-back{clip-path:inset(0 50% 0 0)}
+.opponent.side-player:not(.right-player) .domino-back,.opponent.side-player.right-player .domino-back{flex:0 0 auto;width:calc(70px * var(--opponent-tile-scale));height:calc(62px * var(--opponent-tile-scale));box-sizing:border-box}
+.opponent.side-player:not(.right-player) .domino-backs,.opponent.side-player.right-player .domino-backs{width:calc(16px * var(--opponent-tile-scale));flex:0 0 auto}
+@media(max-width:600px){.online-opponent-hand .domino-back{width:calc(62px * var(--opponent-tile-scale));height:calc(70px * var(--opponent-tile-scale))}}
+.opponent.top-player .domino-backs{top:calc(100% - 9px)}
+.opponent.side-player:not(.right-player) .domino-backs{transform:translateX(-10px)}
+.opponent.side-player.right-player .domino-backs{transform:translateX(10px)}
+.opponent.side-player>div:nth-child(1){width:auto;writing-mode:vertical-rl;white-space:nowrap}
+.opponent.side-player:not(.right-player)>div:nth-child(1){transform:rotate(180deg)}
+.opponent.side-player small{display:none}
+.online-opponent-hands{top:0}
 .recap-modal.modal{width:min(720px,calc(100vw - 24px));max-width:720px;padding:24px;background:#19222e;color:#eef2f4;text-align:left;border:1px solid #34404f;border-radius:16px;box-shadow:0 20px 60px #0009}
 .recap-heading{border-bottom:1px solid #394452;padding-bottom:14px}.recap-modal .recap-heading h2{color:#fff;margin:5px 0 0;font-size:24px}.recap-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:#f6b44a}
 .recap-modal .domino-round-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.recap-modal .domino-round-hands h3{grid-column:1/-1;margin:0;color:#cbd4dc;font-size:13px}.recap-modal .domino-round-hand{min-width:0;margin:0;padding:12px;background:#222e3c;border-radius:10px}.recap-modal .domino-round-hand strong{color:#e7edf0}.recap-empty,.recap-unavailable{color:#b6c2cb;font-size:13px}
