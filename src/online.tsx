@@ -13,6 +13,7 @@ import { audio } from './audio';
 import { DOMINO_PASS_DELAY_MS, useDominoPassFeedback } from './domino-pass-feedback';
 import { celebrate } from './celebration';
 import { DominoRoundSummary } from './domino-round-summary';
+import { createDominoRefresh } from './domino-refresh';
 
 type OnlinePlayer = { uid:string; name:string; seat:number; count:number; score:number; hand:Tile[] | null };
 type Room = { code:string; host:string; me:string; status:'waiting'|'playing'|'finished'; chain:Placed[]; turn:number|null; opening:string|null; message:string; target_score:number; player_limit:number|null; champion_name:string|null; round_finished_at:string|null; turn_deadline?:string|null; players:OnlinePlayer[] };
@@ -71,16 +72,24 @@ export function Online({ back, Board, Domino }: { back:()=>void; Board:React.Com
   useEffect(()=>{
     if (!room || !client) return;
     const c=client, roomCode=room.code;
-    const refresh=()=>void call('domino_state',{p_code:roomCode},true);
-    let channel: ReturnType<typeof c.channel> | undefined, cancelled=false;
+    const refresh=createDominoRefresh(()=>call('domino_state',{p_code:roomCode},true));
+    let channel: ReturnType<typeof c.channel> | undefined, cancelled=false, subscribed=false;
     void c.realtime.setAuth().then(()=>{
       if(cancelled)return;
       channel=c.channel(`maison-domino:${roomCode}`,{config:{private:true}})
-        .on('broadcast',{event:'changed'},refresh)
-        .subscribe(status=>{if(status==='SUBSCRIBED') refresh();});
+        .on('broadcast',{event:'changed'},refresh.request)
+        .subscribe(status=>{subscribed=status==='SUBSCRIBED';if(subscribed) refresh.request();});
     }).catch(()=>{/* Le polling continue si Realtime est indisponible. */});
-    const timer=window.setInterval(refresh,15000);
-    return ()=>{cancelled=true;window.clearInterval(timer);if(channel)void c.removeChannel(channel);};
+    let lastFallback=0;
+    const timer=window.setInterval(()=>{
+      if(document.visibilityState==='hidden') return;
+      const now=Date.now();
+      if(now-lastFallback >= (subscribed ? 8000 : 2000)){lastFallback=now;refresh.request();}
+    },2000);
+    const resume=()=>{if(document.visibilityState==='visible') refresh.request();};
+    document.addEventListener('visibilitychange',resume);
+    window.addEventListener('online',resume);
+    return ()=>{cancelled=true;refresh.stop();window.clearInterval(timer);document.removeEventListener('visibilitychange',resume);window.removeEventListener('online',resume);if(channel)void c.removeChannel(channel);};
   },[room?.code,call]);
   const leave=async()=>{
     if(room && client){
